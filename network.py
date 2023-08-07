@@ -26,6 +26,10 @@ class OlshausenField1996Model:
     def normalize_rows(self):
         self.Phi = self.Phi / np.maximum(np.linalg.norm(self.Phi, ord=2, axis=0, keepdims=True), 1e-8)
 
+    # derivative of sparsity function S(x)=ln(1+x^2)
+    def ln_dot_func(self, x, lmda):
+        return lmda*2*x/(1+x**2)
+
     # thresholding function of S(x)=|x|
     def soft_thresholding_func(self, x, lmda):
         return np.maximum(x - lmda, 0) - np.maximum(-x - lmda, 0)
@@ -54,8 +58,9 @@ class OlshausenField1996Model:
         error = inputs - self.r @ self.Phi.T
         
         r = self.r + self.lr_r * error @ self.Phi
-        self.r = self.soft_thresholding_func(r, self.lmda)
-        #self.r = self.cauchy_thresholding_func(r, self.lmda)
+        # self.r = self.soft_thresholding_func(r, self.lmda)
+        # self.r = self.cauchy_thresholding_func(r, self.lmda)
+        self.r = r + self.ln_dot_func(self.r, self.lmda)
         
         if training:  
             error = inputs - self.r @ self.Phi.T
