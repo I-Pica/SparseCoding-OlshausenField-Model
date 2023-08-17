@@ -57,10 +57,20 @@ class OlshausenField1996Model:
         # Updates                
         error = inputs - self.r @ self.Phi.T
         
-        r = self.r + self.lr_r * error @ self.Phi
+        ## Sparsity, spiking and nonnegativity constraints
+        # use with these params: lr_r=1e-2, lr_Phi=5e-2, lmda=0.4
+        dr = self.soft_thresholding_func(error @ self.Phi, self.lmda)
+        dr[dr>0] = 1.0 # spiking constraint
+        self.r = np.maximum(self.r + self.lr_r * dr, 0) # nonnegativity constraint
+
+        ## Sparsity constraint only
+        # r = self.r + self.lr_r * error @ self.Phi
         # self.r = self.soft_thresholding_func(r, self.lmda)
+        
+        ## Other sparsity constraint terms
         # self.r = self.cauchy_thresholding_func(r, self.lmda)
-        self.r = r + self.ln_dot_func(self.r, self.lmda)
+        # self.r = self.ln_thresholding_func(r, self.lmda)
+        # self.r = r - self.ln_dot_func(self.r, self.lmda) # use with these params: lr_r=5e-2, lr_Phi=5e-2, lmda=0.4
         
         if training:  
             error = inputs - self.r @ self.Phi.T

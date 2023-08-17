@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import network
 from tqdm import tqdm
 import scipy.io as sio
+from datetime import datetime
 
 np.random.seed(0)
 
@@ -18,7 +19,7 @@ num_iter = 500 # number of iterations
 nt_max = 1000 # Maximum number of simulation time
 batch_size = 250 # Batch size
 
-sz = 16 # image patch size
+sz = 8 # image patch size
 num_units = 100 # number of neurons (units)
 
 eps = 1e-2 # small value which determines convergence
@@ -26,7 +27,8 @@ error_list = [] # List to save errors
 
 # Define model
 model = network.OlshausenField1996Model(num_inputs=sz**2, num_units=num_units,
-                                        batch_size=batch_size)
+                                        batch_size=batch_size,
+                                        lr_r=1e-2, lr_Phi=5e-2, lmda=0.4)
 
 # Run simulation
 for iter_ in tqdm(range(num_iter)):
@@ -78,14 +80,18 @@ for iter_ in tqdm(range(num_iter)):
         print("\n iter: "+str(iter_+1)+"/"+str(num_iter)+", Moving error:",
               np.mean(error_list[iter_-99:iter_]))
 
+# Create datetime string for filename
+now = datetime.now()
+dt_string = now.strftime("d%d-%m-%Y_t%H-%M-%S")
+
 # Plot error
 plt.figure(figsize=(5, 3))
 plt.ylabel("Error")
 plt.xlabel("Iterations")
 plt.plot(np.arange(len(error_list)), np.array(error_list))
 plt.tight_layout()
-plt.savefig("error.png")
-plt.show()
+plt.savefig("/Users/pica/Documents/INDP2022/rotation-3-Machens/results/" + dt_string + "_error.png")
+plt.close()
 
 # Plot Receptive fields
 fig = plt.figure(figsize=(8, 8))
@@ -97,5 +103,5 @@ for i in tqdm(range(num_units)):
 
 fig.suptitle("Receptive fields", fontsize=20)
 plt.subplots_adjust(top=0.9)
-plt.savefig("RF.png")
-plt.show()
+plt.savefig("/Users/pica/Documents/INDP2022/rotation-3-Machens/results/" + dt_string + "_RF.png")
+plt.close()
