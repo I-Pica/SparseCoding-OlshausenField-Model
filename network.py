@@ -60,6 +60,7 @@ class OlshausenField1996Model:
         ## Sparsity, spiking and nonnegativity constraints
         # use with these params: lr_r=1e-2, lr_Phi=5e-2, lmda=0.4
         dr = self.soft_thresholding_func(error @ self.Phi, self.lmda)
+        # dr = error @ self.Phi - self.lmda*np.sign(self.r) % alternative definition of L1 regularized cost function
         dr[dr>0] = 1.0 # spiking constraint
         self.r = np.maximum(self.r + self.lr_r * dr, 0) # nonnegativity constraint
 
